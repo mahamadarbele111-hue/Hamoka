@@ -1,14 +1,13 @@
 {
-  "name": "hamoka-bot",
+  "name": "discord-bot",
   "version": "1.0.0",
+  "description": "Discord bot hosted on Replit",
   "main": "main.js",
   "scripts": {
     "start": "node main.js"
   },
   "dependencies": {
-    "discord.js": "^14.15.3",
-    "dotenv": "^16.4.5",
-    "moment-timezone": "^0.5.43",
+    "discord.js": "^14.16.2",
     "express": "^4.18.2"
   }
 }
