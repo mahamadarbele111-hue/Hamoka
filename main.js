@@ -19,6 +19,45 @@ const client = new Client({
     GatewayIntentBits.GuildPresences
   ]
 });
+// Import packages
+const { Client, GatewayIntentBits } = require("discord.js");
+const express = require("express");
+
+// ---------------------
+// Web server (24/7 uptime)
+const app = express();
+app.get("/", (req, res) => {
+  res.send("✅ Bot is alive and running!");
+});
+app.listen(3000, () => {
+  console.log("🌍 Web server running on port 3000");
+});
+
+// ---------------------
+// Discord Bot setup
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,          // server events
+    GatewayIntentBits.GuildMessages,   // messages
+    GatewayIntentBits.MessageContent   // message content
+  ]
+});
+
+// When bot is ready
+client.once("ready", () => {
+  console.log(`🤖 Logged in as ${client.user.tag}`);
+});
+
+// Example command
+client.on("messageCreate", message => {
+  if (message.author.bot) return; // بۆتێک ناوە
+  if (message.content === "!ping") {
+    message.reply("🏓 Pong!");
+  }
+});
+
+// Login with token
+client.login(process.env.TOKEN);
 
 client.once("ready", () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
