@@ -1,96 +1,49 @@
+const { Client, GatewayIntentBits } = require("discord.js");
+require("dotenv").config();
 const express = require("express");
+const moment = require("moment-timezone");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-  res.send("Bot is running!");
-});
-
-app.listen(PORT, () => {
-  console.log(`✅ Server is running on port ${PORT}`);
-});
-const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
-const fs = require("fs");
-
-const config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+app.get("/", (req, res) => res.send("Bot is running..."));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildPresences,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildVoiceStates,
-  ],
+    GatewayIntentBits.GuildPresences
+  ]
 });
-
-let statsMessageId = null;
 
 client.once("ready", () => {
-  console.log(`🤖 Logged in as ${client.user.tag}`);
+  console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
-function getIraqTime() {
-  const now = new Date();
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Baghdad",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false
-  }).format(now);
-}
+client.on("messageCreate", async (message) => {
+  if (message.content === "!stats") {
+    const guild = message.guild;
+    const totalMembers = guild.memberCount;
+    const bots = guild.members.cache.filter((m) => m.user.bot).size;
+    const online = guild.members.cache.filter(
+      (m) => m.presence && m.presence.status !== "offline"
+    ).size;
+    const voiceMembers = guild.members.cache.filter((m) => m.voice.channel).size;
+    const iraqTime = moment().tz("Asia/Baghdad").format("YYYY-MM-DD HH:mm:ss");
 
-async function createStatsEmbed(guild) {
-  const membersCount = guild.members.cache.size;
-  const botsCount = guild.members.cache.filter(m => m.user.bot).size;
-  const onlineCount = guild.members.cache.filter(m => m.presence?.status === "online").size;
-  const voiceCount = guild.members.cache.filter(m => m.voice.channel).size;
-  const iraqTime = getIraqTime();
-
-  return new EmbedBuilder()
-    .setTitle(`📊 Server Statistics for ${guild.name}`)
-    .addFields(
-      { name: "🧑‍🤝‍🧑 Total Members", value: `${membersCount}`, inline: true },
-      { name: "🤖 Bots", value: `${botsCount}`, inline: true },
-      { name: "💻 Online Members", value: `${onlineCount}`, inline: true },
-      { name: "🎤 Voice Channel Members", value: `${voiceCount}`, inline: true },
-      { name: "🕒 Current Time (Iraq)", value: `${iraqTime}`, inline: false }
-    )
-    .setColor("Blue");
-}
-
-async function postOrUpdateStats(interaction) {
-  const guild = interaction.guild;
-  await guild.members.fetch();
-  const channel = guild.channels.cache.get(config.statsChannelId);
-  if (!channel) return interaction.reply("❌ Stats channel not found!");
-
-  const embed = await createStatsEmbed(guild);
-
-  if (!statsMessageId) {
-    const msg = await channel.send({ embeds: [embed] });
-    statsMessageId = msg.id;
-  } else {
-    const msg = await channel.messages.fetch(statsMessageId);
-    await msg.edit({ embeds: [embed] });
-  }
-}
-
-client.on("interactionCreate", async interaction => {
-  if (!interaction.isChatInputCommand()) return;
-
-  if (interaction.commandName === "serverstats") {
-    await interaction.reply("📊 Server stats are being displayed in the channel!");
-    await postOrUpdateStats(interaction);
-
-    setInterval(async () => {
-      await postOrUpdateStats(interaction);
-      console.log("🔄 Stats updated");
-    }, config.updateInterval);
+    message.channel.send(
+      `📊 **Server Stats:**
+👥 Total Members: ${totalMembers}
+🤖 Bots: ${bots}
+🟢 Online: ${online}
+🎙️ In Voice: ${voiceMembers}
+🕒 Iraq Time: ${iraqTime}`
+    );
   }
 });
 
-client.login(config.token);
+client.login(process.env.TOKEN);
