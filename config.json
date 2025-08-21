@@ -1,0 +1,7 @@
+{
+  "token": "YOUR_BOT_TOKEN_HERE",
+  "clientId": "YOUR_BOT_CLIENT_ID_HERE",
+  "guildId": "YOUR_GUILD_ID_HERE",
+  "statsChannelId": "YOUR_CHANNEL_ID_HERE",
+  "updateInterval": 30000
+}
