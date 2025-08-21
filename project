@@ -1,0 +1,7 @@
+my-discord-bot/
+│
+├─ index.js
+├─ deploy-commands.js
+├─ config.json
+├─ package.json
+├─ .gitignore
